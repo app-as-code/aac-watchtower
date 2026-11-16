@@ -1,0 +1,53 @@
+services:
+  # --- Main Application Service ---
+  aac-watchtower:
+    image: "containrrr/watchtower:amd64-0.3.5"
+    container_name: "aac-watchtower"
+    hostname: "watchtower"
+    restart: "always"
+
+
+    environment:
+      TZ: "Europe/Berlin"
+      WATCHTOWER_CLEANUP: "true"
+      WATCHTOWER_POLL_INTERVAL: "3600"
+
+
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+
+    networks:
+      - interconnect
+      - stack_internal
+
+    labels:
+      auto-dns.createWildcard.aac-watchtower: "false"
+      auto-dns.customDNS.aac-watchtower: "true"
+      auto-dns.customDOMAIN.aac-watchtower: "example.com"
+      auto-dns.customHost.aac-watchtower: "watchtower"
+
+
+    security_opt:
+    - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '5'
+
+
+
+networks:
+  secured:
+    name: "services-secured"
+    external: true
+  exposed:
+    name: "services-exposed"
+    external: true
+  interconnect:
+    name: "docker-default"
+    external: true
+  stack_internal:
+    name: "aac-watchtower_stack_internal"
+    driver: "bridge"
+

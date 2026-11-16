@@ -1,0 +1,65 @@
+service:
+  name: aac-watchtower
+  image_repo: containrrr/watchtower
+  image_tag: amd64-0.3.5
+  description: Automatically updates running Docker containers
+  icon: watchtower.png
+  category: System & Utilities
+  stage: prod
+  hostname: watchtower
+ports: []
+config:
+  domain_name: example.com
+  routing_enabled: false
+  integrations:
+    homepage:
+      enabled: false
+    autodns:
+      enabled: true
+  schema_version: 2
+volumes:
+  var_run_docker_sock:
+    description: Auto-migrated raw volume for /var/run/docker.sock
+    type: bind
+    source: /var/run/docker.sock
+deployment_strategy:
+  main:
+    enabled: true
+    target_stage: prod
+  dev:
+    enabled: true
+    target_stage: dev
+  test:
+    enabled: false
+    target_stage: test
+  ansible-dev:
+    enabled: true
+    target_stage: dev
+  iac-dev:
+    enabled: true
+    target_stage: dev
+  template-dev:
+    enabled: true
+    target_stage: dev
+deployments:
+  docker_compose:
+    restart_policy: always
+    host_base_path: /export/docker
+    security_opt:
+    - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '5'
+    volumes:
+    - var_run_docker_sock:/var/run/docker.sock
+    environment:
+      TZ: '{{ vars.TZ }}'
+      WATCHTOWER_CLEANUP: '{{ vars.WATCHTOWER_CLEANUP }}'
+      WATCHTOWER_POLL_INTERVAL: '{{ vars.WATCHTOWER_POLL_INTERVAL }}'
+vars:
+  TZ: Europe/Berlin
+  WATCHTOWER_CLEANUP: 'true'
+  WATCHTOWER_POLL_INTERVAL: '3600'
+secrets: {}
